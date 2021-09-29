@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "options.h"
 #include "pinball.h"
+#include "pb.h"
 #include "score.h"
 
 int high_score::dlg_enter_name;
@@ -177,7 +178,11 @@ void high_score::RenderHighScoreDialog()
 				{
 					score = dlg_score;
 					ImGui::PushItemWidth(200);
-					ImGui::InputText("", default_name, IM_ARRAYSIZE(default_name));
+					//ImGui::InputText("", default_name, IM_ARRAYSIZE(default_name));
+					default_name[31] = 0;
+					place_new_score_into(dlg_hst, dlg_score, default_name, dlg_position);
+					pb::savescore();
+					ImGui::CloseCurrentPopup();
 				}
 				else
 				{
