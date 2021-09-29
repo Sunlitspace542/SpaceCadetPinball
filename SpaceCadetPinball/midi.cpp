@@ -54,9 +54,9 @@ int midi::music_init()
 
 	if (pb::FullTiltMode)
 	{
-		track1 = load_track("TABA1.MDS", true);
-		track2 = load_track("TABA2.MDS", true);
-		track3 = load_track("TABA3.MDS", true);
+		track1 = load_track("TABA1.MID", true);
+		track2 = load_track("TABA2.MID", true);
+		track3 = load_track("TABA3.MID", true);
 	}
 	else
 	{
