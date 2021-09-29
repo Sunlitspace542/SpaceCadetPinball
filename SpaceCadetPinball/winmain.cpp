@@ -243,27 +243,19 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 
 			if (UpdateToFrameCounter >= UpdateToFrameRatio)
 			{
-				UpdateToFrameCounter -= UpdateToFrameRatio;
-
-				if (options::Options.ShowMenu)
-				{
-					ImGui_ImplSDL2_NewFrame();
-					ImGui::NewFrame();
-
-					RenderUi();
-				}
+				ImGui_ImplSDL2_NewFrame();
+				ImGui::NewFrame();
+				RenderUi();
 
 				SDL_RenderClear(renderer);
 				render::PresentVScreen();
 
-				if (options::Options.ShowMenu)
-				{
-					ImGui::Render();
-					ImGuiSDL::Render(ImGui::GetDrawData());
-				}
+				ImGui::Render();
+				ImGuiSDL::Render(ImGui::GetDrawData());
 
 				SDL_RenderPresent(renderer);
 				frameCounter++;
+				UpdateToFrameCounter -= UpdateToFrameRatio;
 			}
 
 			auto sdlError = SDL_GetError();
@@ -314,6 +306,30 @@ int winmain::WinMain(LPCSTR lpCmdLine)
 
 void winmain::RenderUi()
 {
+	// A minimal window with a button to prevent menu lockout.
+	if (!options::Options.ShowMenu)
+	{
+		ImGui::SetNextWindowPos(ImVec2{});
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{10, 0});
+		if (ImGui::Begin("main", nullptr,
+		                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
+		                 ImGuiWindowFlags_AlwaysAutoResize |
+		                 ImGuiWindowFlags_NoMove))
+		{
+			ImGui::PushID(1);
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{});
+			if (ImGui::Button("Menu"))
+			{
+				options::toggle(Menu1::Show_Menu);
+			}
+			ImGui::PopStyleColor(1);
+			ImGui::PopID();
+			ImGui::End();
+		}
+		ImGui::PopStyleVar();
+		return;
+	}
+
 	// No demo window in release to save space
 #ifndef NDEBUG
 	if (ShowImGuiDemo)
@@ -350,7 +366,7 @@ void winmain::RenderUi()
 				end_pause();
 				pb::toggle_demo();
 			}
-			if (ImGui::MenuItem("Exit", "F11"))
+			if (ImGui::MenuItem("Exit"))
 			{
 				SDL_Event event{SDL_QUIT};
 				SDL_PushEvent(&event);
@@ -587,11 +603,7 @@ int winmain::event_handler(const SDL_Event* event)
 		case SDLK_F9:
 			options::toggle(Menu1::Show_Menu);
 			break;
-		case SDLK_F11:
-			SDL_Event event{SDL_QUIT};
-			SDL_PushEvent(&event);
-			break;
-		//default:
+		default:
 			break;
 		}
 
@@ -678,7 +690,7 @@ int winmain::event_handler(const SDL_Event* event)
 			activated = 1;
 			Sound::Activate();
 			if (options::Options.Music && !single_step)
-				midi::play_pb_theme(0);
+				midi::play_pb_theme();
 			no_time_loss = 1;
 			has_focus = 1;
 			break;
@@ -707,9 +719,11 @@ int winmain::event_handler(const SDL_Event* event)
 
 int winmain::ProcessWindowMessages()
 {
+	static auto idleWait = 0;
 	SDL_Event event;
 	if (has_focus && !single_step)
 	{
+		idleWait = static_cast<int>(TargetFrameTime.count());
 		while (SDL_PollEvent(&event))
 		{
 			if (!event_handler(&event))
@@ -719,8 +733,14 @@ int winmain::ProcessWindowMessages()
 		return 1;
 	}
 
-	SDL_WaitEvent(&event);
-	return event_handler(&event);
+	// Progressively wait longer when transitioning to idle
+	idleWait = std::min(idleWait + static_cast<int>(TargetFrameTime.count()), 500);
+	if (SDL_WaitEventTimeout(&event, idleWait))
+	{
+		idleWait = static_cast<int>(TargetFrameTime.count());
+		return event_handler(&event);
+	}
+	return 1;
 }
 
 void winmain::memalloc_failure()
