@@ -311,14 +311,14 @@ void winmain::RenderUi()
 	{
 		ImGui::SetNextWindowPos(ImVec2{});
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{10, 0});
-		if (ImGui::Begin("main", nullptr,
+		if (ImGui::Begin("    ", nullptr,
 		                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
 		                 ImGuiWindowFlags_AlwaysAutoResize |
 		                 ImGuiWindowFlags_NoMove))
 		{
 			ImGui::PushID(1);
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{});
-			if (ImGui::Button("Menu"))
+			if (ImGui::Button("    "))
 			{
 				options::toggle(Menu1::Show_Menu);
 			}
