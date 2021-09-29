@@ -350,7 +350,7 @@ void winmain::RenderUi()
 				end_pause();
 				pb::toggle_demo();
 			}
-			if (ImGui::MenuItem("Exit"))
+			if (ImGui::MenuItem("Exit", "F11"))
 			{
 				SDL_Event event{SDL_QUIT};
 				SDL_PushEvent(&event);
@@ -587,7 +587,11 @@ int winmain::event_handler(const SDL_Event* event)
 		case SDLK_F9:
 			options::toggle(Menu1::Show_Menu);
 			break;
-		default:
+		case SDLK_F11:
+			SDL_Event event{SDL_QUIT};
+			SDL_PushEvent(&event);
+			break;
+		//default:
 			break;
 		}
 
