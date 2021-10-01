@@ -65,8 +65,8 @@ class options
 {
 public:
 	// Original does ~120 updates per second.
-	static constexpr int MaxUps = 360, MaxFps = MaxUps, MinUps = 60, MinFps = MinUps,
-	                     DefUps = 120, DefFps = 60;
+	static constexpr int MaxUps = 999, MaxFps = MaxUps, MinUps = 60, MinFps = MinUps,
+	                     DefUps = 999, DefFps = 999;
 	static optionsStruct Options;
 
 	static void init();
