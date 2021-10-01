@@ -12,10 +12,6 @@ Supports data files from Windows and Full Tilt versions of the game.
 Platforms covered by this project: desktop Windows, Linux and Mac (Intel and Apple Silicon)
 \
 \
-\
-\
-\
-\
 **Source:**
  * `pinball.exe` from `Windows XP` (SHA-1 `2A5B525E0F631BB6107639E2A69DF15986FB0D05`) and its public PDB
  * `CADET.EXE` 32bit version from `Full Tilt! Pinball` (SHA-1 `3F7B5699074B83FD713657CD94671F2156DBEDC4`)
