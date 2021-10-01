@@ -770,10 +770,11 @@ void winmain::a_dialog()
 	if (ImGui::BeginPopupModal("About", &unused_open, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		ImGui::TextUnformatted("3D Pinball for Windows - Space Cadet");
-		ImGui::TextUnformatted("Original game by Cinematronics, Microsoft");
+		ImGui::TextUnformatted("Original game by Cinematronics, Maxis, Microsoft");
+		ImGui::TextUnformatted("Original WinNT version programmed by David Plummer");
 		ImGui::Separator();
 
-		ImGui::TextUnformatted("Decompiled -> Ported to SDL");
+		ImGui::TextUnformatted("Decompiled -> Ported to SDL by k4zmu2a");
 		if (ImGui::SmallButton("Project home: https://github.com/k4zmu2a/SpaceCadetPinball"))
 		{
 #if SDL_VERSION_ATLEAST(2, 0, 14)
