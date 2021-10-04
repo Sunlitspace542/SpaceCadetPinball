@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "high_score.h"
 
-#include "memory.h"
 #include "options.h"
 #include "pinball.h"
 #include "pb.h"
@@ -181,7 +180,7 @@ void high_score::RenderHighScoreDialog()
 					//ImGui::InputText("", default_name, IM_ARRAYSIZE(default_name));
 					default_name[31] = 0;
 					place_new_score_into(dlg_hst, dlg_score, default_name, dlg_position);
-					pb::savescore();
+					pb::writescore();
 					ImGui::CloseCurrentPopup();
 				}
 				else

@@ -14,6 +14,9 @@ if(WIN32)
    set(SDL2_MIXER_PATH "${CMAKE_CURRENT_LIST_DIR}/Libs/SDL2_mixer")
 endif()
 
+# SDL2main is not needed
+set(SDL2_BUILDING_LIBRARY ON)
+
 find_package(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2_mixer REQUIRED)
 
@@ -42,13 +45,10 @@ set(SOURCE_FILES
         SpaceCadetPinball/loader.h
         SpaceCadetPinball/maths.cpp
         SpaceCadetPinball/maths.h
-        SpaceCadetPinball/memory.cpp
-        SpaceCadetPinball/memory.h
         SpaceCadetPinball/midi.cpp
         SpaceCadetPinball/midi.h
         SpaceCadetPinball/nudge.cpp
         SpaceCadetPinball/nudge.h
-        SpaceCadetPinball/objlist_class.h
         SpaceCadetPinball/options.cpp
         SpaceCadetPinball/options.h
         SpaceCadetPinball/partman.cpp
@@ -83,7 +83,6 @@ set(SOURCE_FILES
         SpaceCadetPinball/TDemo.h
         SpaceCadetPinball/TDrain.cpp
         SpaceCadetPinball/TDrain.h
-        SpaceCadetPinball/TEdgeBox.cpp
         SpaceCadetPinball/TEdgeBox.h
         SpaceCadetPinball/TEdgeManager.cpp
         SpaceCadetPinball/TEdgeManager.h
@@ -168,6 +167,12 @@ set(SOURCE_FILES
         SpaceCadetPinball/imstb_truetype.h
         )
 
+# On Windows, include resource file with the icon
+if(WIN32)
+    set_source_files_properties(SpaceCadetPinball/SpaceCadetPinball.rc LANGUAGE RC)
+    list(APPEND SOURCE_FILES SpaceCadetPinball/SpaceCadetPinball.rc)   
+endif(WIN32)
+
 add_executable(SpaceCadetPinball ${SOURCE_FILES})
 
 # Skip pch on foreign code
@@ -190,8 +195,7 @@ target_link_libraries(SpaceCadetPinball ${SDL2_LIBRARY} ${SDL2_MIXER_LIBRARY})
 
 # On Windows, copy DLL to output
 if(WIN32)
-    list(GET SDL2_LIBRARY 1 SDL2_LIB_PATH)
-    get_filename_component(SDL2_DLL_PATH ${SDL2_LIB_PATH} DIRECTORY)
+    get_filename_component(SDL2_DLL_PATH ${SDL2_LIBRARY} DIRECTORY)
     get_filename_component(SDL2_MIXER_DLL_PATH ${SDL2_MIXER_LIBRARY} DIRECTORY)
     message(STATUS "copy paths='${SDL2_DLL_PATH}' '${SDL2_MIXER_DLL_PATH}'") 
     add_custom_command(TARGET SpaceCadetPinball POST_BUILD

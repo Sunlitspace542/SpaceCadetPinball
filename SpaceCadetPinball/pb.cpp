@@ -5,14 +5,12 @@
 #include "control.h"
 #include "fullscrn.h"
 #include "high_score.h"
-#include "memory.h"
 #include "pinball.h"
 #include "proj.h"
 #include "render.h"
 #include "loader.h"
 #include "midi.h"
 #include "nudge.h"
-#include "objlist_class.h"
 #include "options.h"
 #include "timer.h"
 #include "winmain.h"
@@ -32,7 +30,7 @@
 TPinballTable* pb::MainTable = nullptr;
 DatFile* pb::record_table = nullptr;
 int pb::time_ticks = 0, pb::demo_mode = 0, pb::cheat_mode = 0, pb::game_mode = 2, pb::mode_countdown_;
-float pb::time_now, pb::time_next, pb::ball_speed_limit;
+float pb::time_now = 0, pb::time_next = 0, pb::ball_speed_limit, pb::time_ticks_remainder = 0;
 high_score_struct pb::highscore_table[5];
 bool pb::FullTiltMode = false;
 
@@ -41,7 +39,6 @@ int pb::init()
 {
 	float projMat[12], zMin = 0, zScaler = 0;
 
-	++memory::critical_allocation;
 	auto dataFilePath = pinball::make_path_name(winmain::DatFileName);
 	record_table = partman::load_records(dataFilePath.c_str(), FullTiltMode);
 
@@ -75,10 +72,10 @@ int pb::init()
 		zMin = cameraInfo[1];
 		zScaler = cameraInfo[2];
 	}
-	
+
 	render::init(nullptr, zMin, zScaler, resInfo->TableWidth, resInfo->TableHeight);
 	gdrv::copy_bitmap(
-		&render::vscreen,
+		render::vscreen,
 		backgroundBmp->Width,
 		backgroundBmp->Height,
 		backgroundBmp->XPosition,
@@ -101,11 +98,9 @@ int pb::init()
 	MainTable = new TPinballTable();
 
 	high_score::read(highscore_table);
-	ball_speed_limit = MainTable->BallList->Get(0)->Offset * 200.0f;
-	--memory::critical_allocation;
+	ball_speed_limit = MainTable->BallList.at(0)->Offset * 200.0f;
 	return 0;
 }
-
 
 int pb::savescore()
 {
@@ -119,8 +114,7 @@ int pb::uninit()
 	loader::unload();
 	delete record_table;
 	high_score::write(highscore_table);
-	if (MainTable)
-		delete MainTable;
+	delete MainTable;
 	MainTable = nullptr;
 	timer::uninit();
 	render::uninit();
@@ -215,33 +209,37 @@ void pb::replay_level(int demoMode)
 
 void pb::ballset(int x, int y)
 {
-	TBall* ball = MainTable->BallList->Get(0);
+	TBall* ball = MainTable->BallList.at(0);
 	ball->Acceleration.X = x * 30.0f;
 	ball->Acceleration.Y = y * 30.0f;
 	ball->Speed = maths::normalize_2d(&ball->Acceleration);
 }
 
-void pb::frame(int dtMilliSec)
+void pb::frame(float dtMilliSec)
 {
-	
 	if (dtMilliSec > 100)
 		dtMilliSec = 100;
-	if (dtMilliSec <= 0)
+	if (dtMilliSec < 0)
 		return;
-	float dtMicroSec = dtMilliSec * 0.001f;
+	float dtSec = dtMilliSec * 0.001f;
 	if (!mode_countdown(dtMilliSec))
 	{
-		time_next = time_now + dtMicroSec;
-		timed_frame(time_now, dtMicroSec, true);
+		time_next = time_now + dtSec;
+		timed_frame(time_now, dtSec, true);
 		time_now = time_next;
-		time_ticks += dtMilliSec;
+
+		dtMilliSec += time_ticks_remainder;
+		auto dtWhole = static_cast<int>(dtMilliSec);
+		time_ticks_remainder = dtMilliSec - static_cast<float>(dtWhole);
+		time_ticks += dtWhole;
+
 		if (nudge::nudged_left || nudge::nudged_right || nudge::nudged_up)
 		{
-			nudge::nudge_count = dtMicroSec * 4.0f + nudge::nudge_count;
+			nudge::nudge_count = dtSec * 4.0f + nudge::nudge_count;
 		}
 		else
 		{
-			auto nudgeDec = nudge::nudge_count - dtMicroSec;
+			auto nudgeDec = nudge::nudge_count - dtSec;
 			if (nudgeDec <= 0.0f)
 				nudgeDec = 0.0;
 			nudge::nudge_count = nudgeDec;
@@ -265,9 +263,8 @@ void pb::timed_frame(float timeNow, float timeDelta, bool drawBalls)
 {
 	vector_type vec1{}, vec2{};
 
-	for (int i = 0; i < MainTable->BallList->GetCount(); i++)
+	for (auto ball : MainTable->BallList)
 	{
-		auto ball = MainTable->BallList->Get(i);
 		if (ball->ActiveFlag != 0)
 		{
 			auto collComp = ball->CollisionComp;
@@ -308,9 +305,8 @@ void pb::timed_frame(float timeNow, float timeDelta, bool drawBalls)
 
 	if (drawBalls)
 	{
-		for (int i = 0; i < MainTable->BallList->GetCount(); i++)
+		for (auto ball : MainTable->BallList)
 		{
-			auto ball = MainTable->BallList->Get(i);
 			if (ball->ActiveFlag)
 				ball->Repaint();
 		}
@@ -451,19 +447,19 @@ void pb::keydown(int key)
 		{
 		case 'b':
 			TBall* ball;
-			if (MainTable->BallList->GetCount() <= 0)
+			if (MainTable->BallList.empty())
 			{
 				ball = new TBall(MainTable);
 			}
 			else
 			{
-				for (auto index = 0; ;)
+				for (auto index = 0u; ;)
 				{
-					ball = MainTable->BallList->Get(index);
+					ball = MainTable->BallList.at(index);
 					if (!ball->ActiveFlag)
 						break;
 					++index;
-					if (index >= MainTable->BallList->GetCount())
+					if (index >= MainTable->BallList.size())
 					{
 						ball = new TBall(MainTable);
 						break;
@@ -482,11 +478,6 @@ void pb::keydown(int key)
 			char String1[200];
 			strncpy(String1, pinball::get_rc_string(26, 0), sizeof String1 - 1);
 			high_score::show_and_set_high_score_dialog(highscore_table, 1000000000, 1, String1);
-			break;
-		case 'm':
-			char buffer[20];
-			snprintf(buffer, sizeof buffer, "%zu", memory::use_total);
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Mem:", buffer, winmain::MainWindow);
 			break;
 		case 'r':
 			control::cheat_bump_rank();

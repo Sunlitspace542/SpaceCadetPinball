@@ -1,5 +1,4 @@
 #pragma once
-#include "objlist_class.h"
 
 struct zmap_header_type;
 struct gdrv_bitmap8;
@@ -25,18 +24,14 @@ public:
 	virtual void put_scoring(int index, int score);
 	virtual int get_scoring(int index);
 
-	void* operator new(size_t Size);
-	void operator delete(void* p);
-
 	char UnusedBaseFlag;
 	char ActiveFlag;
 	int MessageField;
 	char* GroupName;
-	int Unknown4;
 	component_control* Control;
 	int GroupIndex;
 	render_sprite_type_struct* RenderSprite;
 	TPinballTable* PinballTable;
-	objlist_class<gdrv_bitmap8>* ListBitmap;
-	objlist_class<zmap_header_type>* ListZMap;
+	std::vector<gdrv_bitmap8*>* ListBitmap;
+	std::vector<zmap_header_type*>* ListZMap;
 };
