@@ -678,7 +678,7 @@ void control::pbctrl_bdoor_controller(int key)
 	{
 		pb::cheat_mode = 1;
 	}
-	else if (strncmp(buffer, "tset neddih dne", 11) == 0)
+	else if (strncmp(buffer, "tset neddih dne", 15) == 0)
 	{
 		pb::cheat_mode = 0;
 	}
