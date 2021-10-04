@@ -641,7 +641,7 @@ void control::handler(int code, TPinballComponent* cmp)
 void control::pbctrl_bdoor_controller(int key)
 {
 	static char buffer[11 + 1]{};
-	static const char* quotes[8]
+	static const char* quotes[20]
 	{
 		"Hey, is that a screen saver?",
 		"I guess it has been a good week",
@@ -650,7 +650,20 @@ void control::pbctrl_bdoor_controller(int key)
 		"don't even bother coming in Sunday.",
 		"Tomorrow already sucks",
 		"I knew it worked too good to be right.",
-		"World's most expensive flippers"
+		"World's most expensive flippers",
+		"JOHN!",
+		"I wanna be a 500Lb. Bananna",
+		"Guess what I'm gonna do APS...",
+		"We could make fun paperclips.",
+		"I would like to read more than Post-Its",
+		"The real trick?",
+		"Noodle, Noodle, Noodle...",
+		"Noodle...",
+		"Family Entertainmant",
+		"Nope. No Cows.",
+		"Oh I'm sorry.",
+		"Did I break your concentration?"
+
 	};
 
 	if (control_lite198_tag.Component->MessageField || !key)
