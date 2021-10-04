@@ -102,7 +102,7 @@ int pb::init()
 	return 0;
 }
 
-int pb::savescore()
+int pb::writescore()
 {
 	high_score::write(highscore_table);
 	return 0;

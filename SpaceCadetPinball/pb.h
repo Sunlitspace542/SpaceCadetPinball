@@ -40,7 +40,7 @@ public:
 	static high_score_struct highscore_table[5];
 	static bool FullTiltMode;
 
-	static int savescore();
+	static int writescore();
 	static int init();
 	static int uninit();
 	static void reset_table();
