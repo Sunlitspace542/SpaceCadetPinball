@@ -50,8 +50,8 @@ public:
 	float InputTime;
 	float AngleStopTime;
 	float AngleMult;
-	float BmpCoef1;
-	float BmpCoef2;
+	float ExtendTime;
+	float RetractTime;
 	vector_type NextBallPosition{};
 
 	static float flipper_sin_angle, flipper_cos_angle;
